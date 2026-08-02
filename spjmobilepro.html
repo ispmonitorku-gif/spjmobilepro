@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Aplikasi SPJ Mobile Terintegrasi</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  
+  <style>
+    /* UI Redesign - Apple iOS & Modern Material Hybrid */
+    :root {
+      --primary-gradient: linear-gradient(135deg, #007aff, #0056b3);
+      --secondary-gradient: linear-gradient(135deg, #34c759, #248a3d);
+      --danger-gradient: linear-gradient(135deg, #ff3b30, #c92c23);
+      --info-gradient: linear-gradient(135deg, #5ac8fa, #0088cc);
+      --bg-color: #f2f2f7;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --text-main: #1c1c1e;
+      --text-muted: #8e8e93;
+    }
+    
+    body {
+      background-color: var(--bg-color);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding-top: 85px; 
+      padding-bottom: 110px; 
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    /* Header Ala iOS Frosted Glass */
+    .app-header {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: var(--text-main);
+      padding: 20px 15px 15px 15px;
+      padding-top: env(safe-area-inset-top, 20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1030;
+      text-align: center;
+    }
+    .app-header h5 {
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    /* Bottom Navigation Ala iOS Floating Dock */
+    .bottom-nav {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 40px);
+      max-width: 560px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 10px;
+      z-index: 1030;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+    .bottom-nav .nav-item {
+      text-align: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      flex: 1;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      text-decoration: none;
+      border-radius: 20px;
+      padding: 5px;
+    }
+    .bottom-nav .nav-item.active {
+      color: #007aff;
+      background: rgba(0, 122, 255, 0.1);
+      transform: scale(1.05);
+    }
+    .bottom-nav .nav-item i {
+      font-size: 1.4rem;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .bottom-nav .nav-item span {
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    /* Card & Form Styling Premium */
+    .card-custom {
+      border: none;
+      border-radius: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      background: var(--card-bg);
+      margin-bottom: 20px;
+      padding: 22px;
+      transition: transform 0.2s ease;
+    }
+    .card-custom:active {
+      transform: scale(0.99);
+    }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title i {
+      font-size: 1.2rem;
+      padding: 6px;
+      border-radius: 10px;
+      color: white;
+    }
+    .title-primary i { background: var(--primary-gradient); }
+    .title-success i { background: var(--secondary-gradient); }
+    .title-warning i { background: linear-gradient(135deg, #ff9500, #e68600); }
+    .title-info i { background: var(--info-gradient); }
+    .title-danger i { background: var(--danger-gradient); }
+    .title-report i { background: linear-gradient(135deg, #5856d6, #3b3a9c); }
+
+    .form-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #3a3a3c;
+      margin-bottom: 6px;
+    }
+    .form-control, .form-select {
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      border: 1px solid #e5e5ea;
+      background-color: #f9f9f9;
+      transition: all 0.2s ease;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #007aff;
+      background-color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15);
+    }
+    
+    .btn-submit {
+      border-radius: 18px;
+      padding: 16px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      border: none;
+      color: white;
+      transition: all 0.2s ease;
+    }
+    .btn-submit:active { transform: scale(0.96); }
+    .btn-primary-gradient { background: var(--primary-gradient); box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3); }
+    .btn-danger-gradient { background: var(--danger-gradient); box-shadow: 0 8px 20px rgba(255, 59, 48, 0.3); }
+    .btn-info-gradient { background: var(--info-gradient); box-shadow: 0 8px 20px rgba(90, 200, 250, 0.3); }
+
+    .preview-img {
+      width: 100%;
+      height: 140px;
+      border-radius: 14px;
+      object-fit: cover;
+      display: none;
+      margin-top: 10px;
+      border: 2px dashed #e5e5ea;
+    }
+    
+    /* Utility */
+    .tab-view { display: none; }
+    .tab-view.active { display: block; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes slideUp { 
+      from { opacity: 0; transform: translateY(20px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
+  </style>
+</head>
+<body>
+
+  <!-- App Header -->
+  <div class="app-header">
+    <h5 class="m-0"><i class="bi bi-rocket-takeoff-fill me-2"></i>SPJ Mobile Pro</h5>
+    <small class="opacity-75" style="font-size: 0.75rem; font-weight: 500;">Generator Dokumen Otomatis</small>
+  </div>
+
+  <div class="container max-width-md" style="max-width: 600px;">
+    <form id="mainForm">
+      
+      <!-- ================== TAB 1: DATA UTAMA ================== -->
+      <div id="tab-data" class="tab-view active">
+        
+        <div class="card-custom">
+          <div class="section-title title-primary"><i class="bi bi-people-fill"></i> Data Team</div>
+          <div class="p-3 mb-3 bg-white rounded-4 shadow-sm border border-light">
+            <span class="badge bg-primary mb-2 rounded-pill px-3 py-2"><i class="bi bi-person-star"></i> Anggota Utama (1)</span>
+            <div class="row g-2">
+              <div class="col-3">
+                <label class="form-label">No.</label>
+                <input type="text" class="form-control text-center" id="no1" value="1" required>
+              </div>
+              <div class="col-9">
+                <label class="form-label">Nama Anggota</label>
+                <input type="text" class="form-control" id="nama1" required placeholder="Contoh: Sasro Lumbangaol">
+              </div>
+            </div>
+          </div>
+          <div class="p-3 bg-white rounded-4 shadow-sm border border-light">
+            <span class="badge bg-secondary mb-2 rounded-pill px-3 py-2"><i class="bi bi-person-add"></i> Anggota Tim (2)</span>
+            <div class="row g-2">
+              <div class="col-3">
+                <label class="form-label">No.</label>
+                <input type="text" class="form-control text-center" id="no2" value="2">
+              </div>
+              <div class="col-9">
+                <label class="form-label">Nama Anggota</label>
+                <input type="text" class="form-control" id="namaTeam2" placeholder="Contoh: Budi Santoso">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-custom">
+          <div class="section-title title-success"><i class="bi bi-signpost-split-fill"></i> Rute & Waktu</div>
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">Kota Asal</label>
+              <input type="text" class="form-control" id="asal" value="Medan" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Kota Tujuan</label>
+              <input type="text" class="form-control" id="tujuan" required placeholder="Tebing Tinggi">
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">Tgl Berangkat</label>
+              <input type="date" class="form-control" id="tglBerangkat" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Jam Berangkat</label>
+              <input type="time" class="form-control" id="waktuBerangkat" value="09:00" required>
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">Tgl Pulang</label>
+              <input type="date" class="form-control" id="tglPulang" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Jam Pulang</label>
+              <input type="time" class="form-control" id="waktuPulang" value="19:54">
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Jarak Tempuh (KM)</label>
+            <input type="number" class="form-control" id="jarak" placeholder="Contoh: 1974">
+          </div>
+        </div>
+
+        <div class="card-custom">
+          <div class="section-title title-warning"><i class="bi bi-geo-alt-fill"></i> Titik Koordinat</div>
+          <div class="mb-3">
+            <label class="form-label">Koordinat Asal</label>
+            <input type="text" class="form-control" id="koordinatAsal" placeholder="3.5848721,98.6534523">
+          </div>
+          <div>
+            <label class="form-label">Koordinat Tujuan</label>
+            <input type="text" class="form-control" id="koordinatTujuan" placeholder="3.365098,99.162132">
+          </div>
+        </div>
+
+        <div class="card-custom">
+          <div class="section-title title-info"><i class="bi bi-briefcase-fill"></i> Detail Pekerjaan</div>
+          
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label mb-0">Keterangan Pekerjaan (Tiket PMR)</label>
+              <button type="button" class="btn btn-sm btn-light border shadow-sm rounded-pill" onclick="document.getElementById('keteranganPekerjaan').value = document.getElementById('keteranganPekerjaan').placeholder" style="font-size: 0.75rem;">
+                 <i class="bi bi-stickies"></i> Template
+              </button>
+            </div>
+            <textarea class="form-control" id="keteranganPekerjaan" rows="3" placeholder="Nokia PSS4 Site BP7 Tebing Tinggi (PMR-260620537) & Nokia PSS4 Site Dusun 3 (PMR-260620689)"></textarea>
+          </div>
+
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label mb-0">Deskripsi Milestone</label>
+              <div>
+                <button type="button" class="btn btn-sm btn-light border shadow-sm rounded-pill me-1" onclick="document.getElementById('deskripsiMilestone').value = document.getElementById('deskripsiMilestone').placeholder" style="font-size: 0.75rem;">
+                  <i class="bi bi-stickies"></i> Template
+                </button>
+                <div class="dropdown d-inline-block">
+                  <button class="btn btn-sm btn-light border shadow-sm rounded-pill dropdown-toggle" type="button" id="btnRiwayat" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.75rem;">
+                    <i class="bi bi-clock-history"></i> Riwayat
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2" aria-labelledby="btnRiwayat" id="listRiwayat" style="max-width: 300px;">
+                    <li><span class="dropdown-item text-muted small">Belum ada riwayat</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <textarea class="form-control" id="deskripsiMilestone" rows="12" placeholder="Tikor asal : 3.5848721,98.6534523 Tikor tujuan : 3.365098, 99.162132&#10;08.20 : Berangkat perjalanan menuju site BP7 Tebing Tinggi&#10;10.15 : Koordinasi akses masuk site&#10;10.45 : Cleaning Air Filter dengan vacum cleaner&#10;11.00 : Monitoring perangkat dan pengecekan alarm&#10;12.00 : Perapihan tools&#10;12.30 : Istirahat sholat dan makan siang&#10;13.15 : Berangkat perjalanan menuju site Dusun 3&#10;13.45 : Koordinasi akses masuk site&#10;14.00 : Cleaning Air Filter dengan vacum cleaner&#10;14.30 : Monitoring perangkat & alarm&#10;15.45 : Perapihan tools&#10;16.15 : Berangkat pulang ke Medan&#10;17.30 : Tiba di NDC Medan dan perapihan tools&#10;19.54 : selesai perapihan tools."></textarea>
+          </div>
+
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label mb-0">Keterangan Tambahan</label>
+              <button type="button" class="btn btn-sm btn-light border shadow-sm rounded-pill" onclick="document.getElementById('keteranganTambahan').value = document.getElementById('keteranganTambahan').placeholder" style="font-size: 0.75rem;">
+                 <i class="bi bi-stickies"></i> Template
+              </button>
+            </div>
+            <textarea class="form-control" id="keteranganTambahan" rows="5" placeholder="Kenapa jalan bertiga :&#10;1. Jarak lokasi PMR dari Nix Medan ke lokasi PMR Site BP7, Dusun3 dan Tamsis sudah masuk dalam ketentuan SPJ (60 km dari NIX Medan).&#10;2. Saat mengerjakan PMR kami bagi tugas 1 pic mengemudi dan 1 pic lagi melakukan activity PMR BP7, Dusun3 & Tamsis dan bisa bergantian:"></textarea>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label">Nama Approver</label>
+              <input type="text" class="form-control" id="namaSPV" required placeholder="Cth: Budi">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Posisi Approval</label>
+              <select class="form-select" id="approvalPosition">
+                <option value="SPV">SPV</option>
+                <option value="Manager">Manager</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Button Lanjut -->
+        <button type="button" class="btn btn-primary-gradient btn-submit w-100 mt-2 mb-4" onclick="switchTab('spj')">
+          Lanjut ke Dokumen SPJ <i class="bi bi-arrow-right-circle-fill ms-1"></i>
+        </button>
+      </div>
+
+      <!-- ================== TAB 2: SPJ (PPTX/EXCEL) ================== -->
+      <div id="tab-spj" class="tab-view">
+        <div class="card-custom">
+          <div class="section-title title-danger"><i class="bi bi-images"></i> Foto Bukti SPJ</div>
+          <p class="small text-muted mb-4">Pilih maksimal 2 foto yang akan dimasukkan ke dalam Google Slides & Excel.</p>
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label">Foto Bukti 1</label>
+              <input type="file" class="form-control" id="f1_input" accept="image/*" capture="environment" onchange="processImage(this, 'f1')">
+              <img id="f1_preview" class="preview-img" alt="Preview 1">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Foto Bukti 2</label>
+              <input type="file" class="form-control" id="f2_input" accept="image/*" capture="environment" onchange="processImage(this, 'f2')">
+              <img id="f2_preview" class="preview-img" alt="Preview 2">
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-danger-gradient btn-submit w-100 mt-2" id="btnSubmitSPJ" onclick="submitSPJ()">
+          <i class="bi bi-file-earmark-ppt-fill me-1"></i> Generate Dokumen SPJ
+        </button>
+        
+        <div id="outputSPJ" class="mt-4 mb-4"></div>
+      </div>
+
+      <!-- ================== TAB 3: REPORT (DOC/PDF) ================== -->
+      <div id="tab-report" class="tab-view">
+        
+        <!-- PENAMBAHAN: Card Input Khusus Report -->
+        <div class="card-custom">
+          <div class="section-title title-report"><i class="bi bi-card-text"></i> Data Laporan (Auto-Fill)</div>
+          <p class="small text-muted mb-4">Data ini diisi otomatis dari halaman utama, tapi dapat Anda ubah jika perlu untuk Word Report.</p>
+          
+          <div class="mb-3">
+            <label class="form-label">Nama Pegawai (Employee Name)</label>
+            <input type="text" class="form-control" id="reportEmployeeName" placeholder="Otomatis terisi...">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Jabatan (Position Title)</label>
+            <input type="text" class="form-control" id="reportPositionTitle" placeholder="Contoh: Teknisi / Engineer">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tujuan (Destination)</label>
+            <input type="text" class="form-control" id="reportDestination" placeholder="Otomatis terisi...">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Tujuan Pekerjaan (Purpose)</label>
+            <textarea class="form-control" id="reportPurpose" rows="3" placeholder="Otomatis terisi..."></textarea>
+          </div>
+        </div>
+
+        <div class="card-custom">
+          <div class="section-title title-info"><i class="bi bi-camera-fill"></i> Foto Report Pekerjaan</div>
+          <p class="small text-muted mb-4">Pilih 4 foto dokumentasi lapangan untuk Laporan Google Docs.</p>
+          
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">Foto Berangkat</label>
+              <input type="file" class="form-control" id="r1_input" accept="image/*" capture="environment" onchange="processImage(this, 'r1')">
+              <img id="r1_preview" class="preview-img">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Foto Tiba</label>
+              <input type="file" class="form-control" id="r2_input" accept="image/*" capture="environment" onchange="processImage(this, 'r2')">
+              <img id="r2_preview" class="preview-img">
+            </div>
+          </div>
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label">Foto Akan Pulang</label>
+              <input type="file" class="form-control" id="r3_input" accept="image/*" capture="environment" onchange="processImage(this, 'r3')">
+              <img id="r3_preview" class="preview-img">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Foto Tiba Kembali Kantor</label>
+              <input type="file" class="form-control" id="r4_input" accept="image/*" capture="environment" onchange="processImage(this, 'r4')">
+              <img id="r4_preview" class="preview-img">
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-info-gradient text-white btn-submit w-100 mt-2" id="btnSubmitReport" onclick="submitReport()">
+          <i class="bi bi-file-earmark-word-fill me-1"></i> Generate Report Docs
+        </button>
+        
+        <div id="outputReport" class="mt-4 mb-4"></div>
+      </div>
+      
+    </form>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <a href="#" class="nav-item active" id="nav-data" onclick="switchTab('data'); return false;">
+      <i class="bi bi-house-door-fill"></i>
+      <span>Utama</span>
+    </a>
+    <a href="#" class="nav-item" id="nav-spj" onclick="switchTab('spj'); return false;">
+      <i class="bi bi-file-slides-fill"></i>
+      <span>Doc SPJ</span>
+    </a>
+    <a href="#" class="nav-item" id="nav-report" onclick="switchTab('report'); return false;">
+      <i class="bi bi-file-earmark-text-fill"></i>
+      <span>Laporan</span>
+    </a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // State Penyimpanan Foto base64
+    let photoData = {
+      f1: { b64: "", mime: "", name: "" },
+      f2: { b64: "", mime: "", name: "" },
+      r1: { b64: "", mime: "", name: "" },
+      r2: { b64: "", mime: "", name: "" },
+      r3: { b64: "", mime: "", name: "" },
+      r4: { b64: "", mime: "", name: "" }
+    };
+
+    // GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
+    const GAS_WEB_APP_URL ="https://script.google.com/macros/s/AKfycbx5Q7c4I35ylht3ibl41EgWwPukw7YOZ3roB4uP_fnOHprNs4_9Hf1twCXlI0nZ0tna/exec";
+
+    // Navigasi Tab Bottom Bar dengan Animasi dan Auto-Fill Report
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('nav-' + tabId).classList.add('active');
+      
+      // Auto Scroll ke Atas secara smooth
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // PENAMBAHAN: Sinkronisasi data ke Tab Report jika menu Report dibuka
+      if (tabId === 'report') {
+        autoFillReportData();
+      }
+    }
+
+    // PENAMBAHAN: Fungsi Auto-Fill data khusus Report
+    function autoFillReportData() {
+      const namaUtama = document.getElementById('nama1').value;
+      const tujuanUtama = document.getElementById('tujuan').value;
+      const kerjaanUtama = document.getElementById('keteranganPekerjaan').value;
+
+      const inEmpName = document.getElementById('reportEmployeeName');
+      const inDest = document.getElementById('reportDestination');
+      const inPurpose = document.getElementById('reportPurpose');
+
+      // Hanya isi jika masih kosong agar tidak menimpa jika user sengaja mengedit
+      if (!inEmpName.value && namaUtama) inEmpName.value = namaUtama;
+      if (!inDest.value && tujuanUtama) inDest.value = tujuanUtama;
+      if (!inPurpose.value && kerjaanUtama) inPurpose.value = kerjaanUtama;
+    }
+
+    // Kompresi Gambar agar proses upload cepat tanpa timeout
+    function compressImage(file, callback) {
+      var maxWidth = 1200;
+      var maxHeight = 1200;
+      var reader = new FileReader();
+      
+      reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+          var width = img.width;
+          var height = img.height;
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          var canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          var dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+          callback(dataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Handler Perubahan Input Foto Dinamis
+    function processImage(input, key) {
+      var file = input.files[0];
+      if (file) {
+        photoData[key].name = file.name;
+        photoData[key].mime = 'image/jpeg';
+        compressImage(file, function(compressedBase64) {
+          photoData[key].b64 = compressedBase64.split(',')[1]; 
+          var img = document.getElementById(key + '_preview');
+          img.src = compressedBase64;
+          img.style.display = 'block';
+        });
+      }
+    }
+
+    // Mengumpulkan seluruh Data Input (termasuk input baru di report)
+    function getTextFormData() {
+      if(!document.getElementById('nama1').value) {
+        alert("Nama Anggota 1 (Data Utama) Wajib diisi!");
+        switchTab('data');
+        return null;
+      }
+      return {
+        // Data Utama
+        no1: document.getElementById('no1').value,
+        nama1: document.getElementById('nama1').value,
+        no2: document.getElementById('no2').value,
+        namaTeam2: document.getElementById('namaTeam2').value,
+        asal: document.getElementById('asal').value,
+        tujuan: document.getElementById('tujuan').value,
+        tglBerangkat: document.getElementById('tglBerangkat').value,
+        waktuBerangkat: document.getElementById('waktuBerangkat').value,
+        tglPulang: document.getElementById('tglPulang').value,
+        waktuPulang: document.getElementById('waktuPulang').value,
+        jarak: document.getElementById('jarak').value,
+        koordinatAsal: document.getElementById('koordinatAsal').value,
+        koordinatTujuan: document.getElementById('koordinatTujuan').value,
+        keteranganPekerjaan: document.getElementById('keteranganPekerjaan').value,
+        deskripsiMilestone: document.getElementById('deskripsiMilestone').value,
+        keteranganTambahan: document.getElementById('keteranganTambahan').value,
+        namaSPV: document.getElementById('namaSPV').value,
+        approvalPosition: document.getElementById('approvalPosition').value,
+        
+        // Data Report (Penambahan Baru)
+        reportEmployeeName: document.getElementById('reportEmployeeName').value,
+        reportPositionTitle: document.getElementById('reportPositionTitle').value,
+        reportDestination: document.getElementById('reportDestination').value,
+        reportPurpose: document.getElementById('reportPurpose').value
+      };
+    }
+
+    // ==========================================
+    // FUNGSI SUBMIT GENERATE SPJ (PPTX & EXCEL)
+    // ==========================================
+    function submitSPJ() {
+      var data = getTextFormData();
+      if (!data) return;
+
+      data.f1_b64 = photoData.f1.b64; data.f1_mime = photoData.f1.mime; data.f1_name = photoData.f1.name;
+      data.f2_b64 = photoData.f2.b64; data.f2_mime = photoData.f2.mime; data.f2_name = photoData.f2.name;
+      
+      // Indikator bahwa ini request untuk SPJ
+      data.action = 'generateSPJ';
+
+      var btn = document.getElementById('btnSubmitSPJ');
+      var out = document.getElementById('outputSPJ');
+      
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Memproses SPJ...`;
+      out.innerHTML = '';
+
+      // Menggunakan fetch API untuk mengirim data ke Google Apps Script Web App
+      fetch(GAS_WEB_APP_URL, {
+        method: 'POST',
+        // 'no-cors' mode tidak memungkinkan kita membaca respon JSON secara langsung
+        // Jadi kita akan memanggil WebApp yang mendukung JSONP atau menangani CORS
+        // Untuk saat ini kita asumsikan WebApp merespon dengan header CORS yang benar
+        body: JSON.stringify(data),
+      })
+      .then(response => response.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-file-earmark-ppt-fill me-1"></i> Generate Dokumen SPJ`;
+        if (res.status === 'success') {
+          saveMilestoneHistory(data.deskripsiMilestone);
+          out.innerHTML = `
+            <div class="alert alert-success border-0 shadow-sm rounded-4">
+              <h6 class="fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Berhasil!</h6>
+              <p class="small mb-3">${res.message}</p>
+              <div class="d-grid gap-2">
+                ${res.pdfUrl ? `<a href="${res.pdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh SPJ PDF</a>` : ''}
+                ${res.pptxUrl ? `<a href="${res.pptxUrl}" target="_blank" class="btn btn-outline-danger rounded-pill"><i class="bi bi-file-earmark-slides-fill me-1"></i> Unduh PPTX</a>` : ''}
+                ${res.excelUrl ? `<a href="${res.excelUrl}" target="_blank" class="btn btn-success rounded-pill mt-1"><i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Unduh Excel</a>` : ''}
+              </div>
+            </div>`;
+        } else {
+          out.innerHTML = `<div class="alert alert-danger rounded-4"><i class="bi bi-exclamation-triangle-fill"></i> ${res.message}</div>`;
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-file-earmark-ppt-fill me-1"></i> Generate Dokumen SPJ`;
+        out.innerHTML = `<div class="alert alert-danger rounded-4"><i class="bi bi-wifi-off"></i> Koneksi Error: Pastikan URL Web App benar dan mendukung CORS. ${err}</div>`;
+      });
+    }
+
+    // ==========================================
+    // FUNGSI SUBMIT GENERATE REPORT (DOC/PDF)
+    // ==========================================
+    function submitReport() {
+      // Pastikan auto-fill berjalan saat mensubmit jika ada field yg belum tersinkronisasi
+      autoFillReportData();
+      var data = getTextFormData();
+      if (!data) return;
+
+      data.r1_b64 = photoData.r1.b64; data.r1_mime = photoData.r1.mime; data.r1_name = photoData.r1.name;
+      data.r2_b64 = photoData.r2.b64; data.r2_mime = photoData.r2.mime; data.r2_name = photoData.r2.name;
+      data.r3_b64 = photoData.r3.b64; data.r3_mime = photoData.r3.mime; data.r3_name = photoData.r3.name;
+      data.r4_b64 = photoData.r4.b64; data.r4_mime = photoData.r4.mime; data.r4_name = photoData.r4.name;
+
+      // Indikator bahwa ini request untuk Report
+      data.action = 'generateReport';
+
+      var btn = document.getElementById('btnSubmitReport');
+      var out = document.getElementById('outputReport');
+      
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Memproses Laporan...`;
+      out.innerHTML = '';
+
+      fetch(GAS_WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+      .then(response => response.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-file-earmark-word-fill me-1"></i> Generate Report Docs`;
+        if (res.status === 'success') {
+          saveMilestoneHistory(data.deskripsiMilestone);
+          out.innerHTML = `
+            <div class="alert alert-info border-0 shadow-sm rounded-4">
+              <h6 class="fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Berhasil!</h6>
+              <p class="small mb-3">${res.message}</p>
+              <div class="d-grid gap-2">
+                ${res.docPdfUrl ? `<a href="${res.docPdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh Report PDF</a>` : ''}
+                ${res.docUrl ? `<a href="${res.docUrl}" target="_blank" class="btn btn-primary rounded-pill"><i class="bi bi-file-earmark-word-fill me-1"></i> Unduh Report Word</a>` : ''}
+              </div>
+            </div>`;
+        } else {
+          out.innerHTML = `<div class="alert alert-danger rounded-4"><i class="bi bi-exclamation-triangle-fill"></i> ${res.message}</div>`;
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-file-earmark-word-fill me-1"></i> Generate Report Docs`;
+        out.innerHTML = `<div class="alert alert-danger rounded-4"><i class="bi bi-wifi-off"></i> Koneksi Error: Pastikan URL Web App benar dan mendukung CORS. ${err}</div>`;
+      });
+    }
+
+    // ==========================================
+    // SISTEM RIWAYAT MILESTONE
+    // ==========================================
+    function saveMilestoneHistory(text) {
+      if (!text || text.trim() === "") return;
+      var history = JSON.parse(localStorage.getItem('spjMilestoneHistory') || '[]');
+      history = history.filter(item => item !== text); 
+      history.unshift(text); 
+      if (history.length > 5) history.pop(); 
+      localStorage.setItem('spjMilestoneHistory', JSON.stringify(history));
+      loadMilestoneHistory();
+    }
+
+    function loadMilestoneHistory() {
+      var history = JSON.parse(localStorage.getItem('spjMilestoneHistory') || '[]');
+      var listEl = document.getElementById('listRiwayat');
+      if (history.length === 0) {
+        listEl.innerHTML = `<li><span class="dropdown-item text-muted small">Belum ada riwayat</span></li>`;
+        return;
+      }
+      var html = '';
+      history.forEach(function(item, index) {
+        var previewText = item.substring(0, 35) + (item.length > 35 ? '...' : '');
+        html += `<li>
+            <a class="dropdown-item small py-2 border-bottom" href="#" onclick="useHistory(${index}); return false;" style="white-space: normal;">
+              <i class="bi bi-clock me-1 text-primary"></i> ${previewText}
+            </a>
+          </li>`;
+      });
+      listEl.innerHTML = html;
+    }
+
+    function useHistory(index) {
+      var history = JSON.parse(localStorage.getItem('spjMilestoneHistory') || '[]');
+      if (history[index]) {
+        document.getElementById('deskripsiMilestone').value = history[index];
+      }
+    }
+
+    window.onload = function() {
+      loadMilestoneHistory();
+      
+      // Auto set tanggal hari ini
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('tglBerangkat').value = today;
+      document.getElementById('tglPulang').value = today;
+    };
+  </script>
+</body>
+</html>
