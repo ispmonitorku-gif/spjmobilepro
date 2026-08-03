@@ -383,16 +383,29 @@
             <label class="form-label">Nama Pegawai (Employee Name)</label>
             <input type="text" class="form-control" id="reportEmployeeName" placeholder="Otomatis terisi...">
           </div>
+          
           <div class="mb-3">
-            <label class="form-label">Jabatan (Position Title)</label>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label mb-0">Jabatan (Position Title)</label>
+              <button type="button" class="btn btn-sm btn-light border shadow-sm rounded-pill" onclick="document.getElementById('reportPositionTitle').value = 'Field Operation Staff'" style="font-size: 0.75rem;">
+                 <i class="bi bi-stickies"></i> Template
+              </button>
+            </div>
             <input type="text" class="form-control" id="reportPositionTitle" placeholder="Contoh: Teknisi / Engineer">
           </div>
+          
           <div class="mb-3">
             <label class="form-label">Tujuan (Destination)</label>
             <input type="text" class="form-control" id="reportDestination" placeholder="Otomatis terisi...">
           </div>
+          
           <div class="mb-2">
-            <label class="form-label">Tujuan Pekerjaan (Purpose)</label>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label mb-0">Tujuan Pekerjaan (Purpose)</label>
+              <button type="button" class="btn btn-sm btn-light border shadow-sm rounded-pill" onclick="document.getElementById('reportPurpose').value = 'Cleaning Air Filter Nokia PSS4 Site BP7 Tebing Tinggi (PMR-260620537) &amp; Nokia PSS4 Site Dusun 3 (PMR-260620689)'" style="font-size: 0.75rem;">
+                 <i class="bi bi-stickies"></i> Template
+              </button>
+            </div>
             <textarea class="form-control" id="reportPurpose" rows="3" placeholder="Otomatis terisi..."></textarea>
           </div>
         </div>
