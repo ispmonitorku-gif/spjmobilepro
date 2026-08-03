@@ -454,8 +454,12 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  
   <script>
+    // =========================================================
+    // WAJIB DIGANTI: Masukkan URL Web App Google Apps Script di sini!
+    // =========================================================
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec'; // GANTI INI NANTI
+    
     // State Penyimpanan Foto base64
     let photoData = {
       f1: { b64: "", mime: "", name: "" },
@@ -465,9 +469,6 @@
       r3: { b64: "", mime: "", name: "" },
       r4: { b64: "", mime: "", name: "" }
     };
-
-    // GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxS6z8wSD9dYXjSU61JYJefTKuT5sspXqUX3KkQmxd1P9_ZjwAETwV2hztQzhfZBgfz/exec";
 
     // Navigasi Tab Bottom Bar dengan Animasi dan Auto-Fill Report
     function switchTab(tabId) {
@@ -496,13 +497,12 @@
       const inDest = document.getElementById('reportDestination');
       const inPurpose = document.getElementById('reportPurpose');
 
-      // Hanya isi jika masih kosong agar tidak menimpa jika user sengaja mengedit
       if (!inEmpName.value && namaUtama) inEmpName.value = namaUtama;
       if (!inDest.value && tujuanUtama) inDest.value = tujuanUtama;
       if (!inPurpose.value && kerjaanUtama) inPurpose.value = kerjaanUtama;
     }
 
-    // Kompresi Gambar agar proses upload cepat tanpa timeout
+    // Kompresi Gambar
     function compressImage(file, callback) {
       var maxWidth = 1200;
       var maxHeight = 1200;
@@ -537,7 +537,7 @@
       reader.readAsDataURL(file);
     }
 
-    // Handler Perubahan Input Foto Dinamis
+    // Handler Perubahan Input Foto
     function processImage(input, key) {
       var file = input.files[0];
       if (file) {
@@ -552,7 +552,7 @@
       }
     }
 
-    // Mengumpulkan seluruh Data Input (termasuk input baru di report)
+    // Mengumpulkan seluruh Data Input
     function getTextFormData() {
       if(!document.getElementById('nama1').value) {
         alert("Nama Anggota 1 (Data Utama) Wajib diisi!");
@@ -560,7 +560,6 @@
         return null;
       }
       return {
-        // Data Utama
         no1: document.getElementById('no1').value,
         nama1: document.getElementById('nama1').value,
         no2: document.getElementById('no2').value,
@@ -579,8 +578,6 @@
         keteranganTambahan: document.getElementById('keteranganTambahan').value,
         namaSPV: document.getElementById('namaSPV').value,
         approvalPosition: document.getElementById('approvalPosition').value,
-        
-        // Data Report (Penambahan Baru)
         reportEmployeeName: document.getElementById('reportEmployeeName').value,
         reportPositionTitle: document.getElementById('reportPositionTitle').value,
         reportDestination: document.getElementById('reportDestination').value,
@@ -589,111 +586,97 @@
     }
 
     // ==========================================
-    // FUNGSI SUBMIT GENERATE SPJ (PPTX & EXCEL)
+    // FUNGSI API CALL KE GAS
+    // ==========================================
+    function callGasAPI(data, btnElement, outElement, originalBtnText, successHtmlBuilder) {
+      btnElement.disabled = true;
+      btnElement.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Memproses...`;
+      outElement.innerHTML = '';
+
+      // Kirim POST dengan text/plain untuk bypass preflight CORS GAS
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(res => {
+        btnElement.disabled = false;
+        btnElement.innerHTML = originalBtnText;
+        if (res.status === 'success') {
+          saveMilestoneHistory(data.deskripsiMilestone);
+          outElement.innerHTML = successHtmlBuilder(res);
+        } else {
+          outElement.innerHTML = `<div class="alert alert-danger rounded-4"><i class="bi bi-exclamation-triangle-fill"></i> ${res.message}</div>`;
+        }
+      })
+      .catch(err => {
+        btnElement.disabled = false;
+        btnElement.innerHTML = originalBtnText;
+        outElement.innerHTML = `<div class="alert alert-danger rounded-4"><i class="bi bi-wifi-off"></i> Koneksi Error: ${err}</div>`;
+      });
+    }
+
+
+    // ==========================================
+    // SUBMIT GENERATE SPJ
     // ==========================================
     function submitSPJ() {
       var data = getTextFormData();
       if (!data) return;
 
+      // Tambahkan action untuk dikenali GAS
+      data.action = 'generateSPJ';
       data.f1_b64 = photoData.f1.b64; data.f1_mime = photoData.f1.mime; data.f1_name = photoData.f1.name;
       data.f2_b64 = photoData.f2.b64; data.f2_mime = photoData.f2.mime; data.f2_name = photoData.f2.name;
-      
-      // Indikator bahwa ini request untuk SPJ
-      data.action = 'generateSPJ';
 
       var btn = document.getElementById('btnSubmitSPJ');
       var out = document.getElementById('outputSPJ');
       
-      btn.disabled = true;
-      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Memproses SPJ...`;
-      out.innerHTML = '';
-
-      // Menggunakan fetch API untuk mengirim data ke Google Apps Script Web App
-      fetch(GAS_WEB_APP_URL, {
-        method: 'POST',
-        // 'no-cors' mode tidak memungkinkan kita membaca respon JSON secara langsung
-        // Jadi kita akan memanggil WebApp yang mendukung JSONP atau menangani CORS
-        // Untuk saat ini kita asumsikan WebApp merespon dengan header CORS yang benar
-        body: JSON.stringify(data),
-      })
-      .then(response => response.json())
-      .then(res => {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="bi bi-file-earmark-ppt-fill me-1"></i> Generate Dokumen SPJ`;
-        if (res.status === 'success') {
-          saveMilestoneHistory(data.deskripsiMilestone);
-          out.innerHTML = `
-            <div class="alert alert-success border-0 shadow-sm rounded-4">
-              <h6 class="fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Berhasil!</h6>
-              <p class="small mb-3">${res.message}</p>
-              <div class="d-grid gap-2">
-                ${res.pdfUrl ? `<a href="${res.pdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh SPJ PDF</a>` : ''}
-                ${res.pptxUrl ? `<a href="${res.pptxUrl}" target="_blank" class="btn btn-outline-danger rounded-pill"><i class="bi bi-file-earmark-slides-fill me-1"></i> Unduh PPTX</a>` : ''}
-                ${res.excelUrl ? `<a href="${res.excelUrl}" target="_blank" class="btn btn-success rounded-pill mt-1"><i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Unduh Excel</a>` : ''}
-              </div>
-            </div>`;
-        } else {
-          out.innerHTML = `<div class="alert alert-danger rounded-4"><i class="bi bi-exclamation-triangle-fill"></i> ${res.message}</div>`;
-        }
-      })
-      .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="bi bi-file-earmark-ppt-fill me-1"></i> Generate Dokumen SPJ`;
-        out.innerHTML = `<div class="alert alert-danger rounded-4"><i class="bi bi-wifi-off"></i> Koneksi Error: Pastikan URL Web App benar dan mendukung CORS. ${err}</div>`;
+      callGasAPI(data, btn, out, `<i class="bi bi-file-earmark-ppt-fill me-1"></i> Generate Dokumen SPJ`, function(res) {
+        return `
+          <div class="alert alert-success border-0 shadow-sm rounded-4">
+            <h6 class="fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Berhasil!</h6>
+            <p class="small mb-3">${res.message}</p>
+            <div class="d-grid gap-2">
+              ${res.pdfUrl ? `<a href="${res.pdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh SPJ PDF</a>` : ''}
+              ${res.pptxUrl ? `<a href="${res.pptxUrl}" target="_blank" class="btn btn-outline-danger rounded-pill"><i class="bi bi-file-earmark-slides-fill me-1"></i> Unduh PPTX</a>` : ''}
+              ${res.excelUrl ? `<a href="${res.excelUrl}" target="_blank" class="btn btn-success rounded-pill mt-1"><i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Unduh Excel</a>` : ''}
+            </div>
+          </div>`;
       });
     }
 
     // ==========================================
-    // FUNGSI SUBMIT GENERATE REPORT (DOC/PDF)
+    // SUBMIT GENERATE REPORT
     // ==========================================
     function submitReport() {
-      // Pastikan auto-fill berjalan saat mensubmit jika ada field yg belum tersinkronisasi
       autoFillReportData();
       var data = getTextFormData();
       if (!data) return;
 
+      // Tambahkan action untuk dikenali GAS
+      data.action = 'generateReport';
       data.r1_b64 = photoData.r1.b64; data.r1_mime = photoData.r1.mime; data.r1_name = photoData.r1.name;
       data.r2_b64 = photoData.r2.b64; data.r2_mime = photoData.r2.mime; data.r2_name = photoData.r2.name;
       data.r3_b64 = photoData.r3.b64; data.r3_mime = photoData.r3.mime; data.r3_name = photoData.r3.name;
       data.r4_b64 = photoData.r4.b64; data.r4_mime = photoData.r4.mime; data.r4_name = photoData.r4.name;
 
-      // Indikator bahwa ini request untuk Report
-      data.action = 'generateReport';
-
       var btn = document.getElementById('btnSubmitReport');
       var out = document.getElementById('outputReport');
       
-      btn.disabled = true;
-      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Memproses Laporan...`;
-      out.innerHTML = '';
-
-      fetch(GAS_WEB_APP_URL, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      })
-      .then(response => response.json())
-      .then(res => {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="bi bi-file-earmark-word-fill me-1"></i> Generate Report Docs`;
-        if (res.status === 'success') {
-          saveMilestoneHistory(data.deskripsiMilestone);
-          out.innerHTML = `
-            <div class="alert alert-info border-0 shadow-sm rounded-4">
-              <h6 class="fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Berhasil!</h6>
-              <p class="small mb-3">${res.message}</p>
-              <div class="d-grid gap-2">
-                ${res.docPdfUrl ? `<a href="${res.docPdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh Report PDF</a>` : ''}
-                ${res.docUrl ? `<a href="${res.docUrl}" target="_blank" class="btn btn-primary rounded-pill"><i class="bi bi-file-earmark-word-fill me-1"></i> Unduh Report Word</a>` : ''}
-              </div>
-            </div>`;
-        } else {
-          out.innerHTML = `<div class="alert alert-danger rounded-4"><i class="bi bi-exclamation-triangle-fill"></i> ${res.message}</div>`;
-        }
-      })
-      .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="bi bi-file-earmark-word-fill me-1"></i> Generate Report Docs`;
-        out.innerHTML = `<div class="alert alert-danger rounded-4"><i class="bi bi-wifi-off"></i> Koneksi Error: Pastikan URL Web App benar dan mendukung CORS. ${err}</div>`;
+      callGasAPI(data, btn, out, `<i class="bi bi-file-earmark-word-fill me-1"></i> Generate Report Docs`, function(res) {
+        return `
+          <div class="alert alert-info border-0 shadow-sm rounded-4">
+            <h6 class="fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Berhasil!</h6>
+            <p class="small mb-3">${res.message}</p>
+            <div class="d-grid gap-2">
+              ${res.docPdfUrl ? `<a href="${res.docPdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh Report PDF</a>` : ''}
+              ${res.docUrl ? `<a href="${res.docUrl}" target="_blank" class="btn btn-primary rounded-pill"><i class="bi bi-file-earmark-word-fill me-1"></i> Unduh Report Word</a>` : ''}
+            </div>
+          </div>`;
       });
     }
 
@@ -739,7 +722,6 @@
     window.onload = function() {
       loadMilestoneHistory();
       
-      // Auto set tanggal hari ini
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('tglBerangkat').value = today;
       document.getElementById('tglPulang').value = today;
