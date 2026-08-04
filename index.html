@@ -567,8 +567,11 @@
 
     // Mengumpulkan seluruh Data Input
     function getTextFormData() {
+      // PERBAIKAN: Mengganti fungsi alert() bawaan dengan notifikasi HTML DOM
       if(!document.getElementById('nama1').value) {
-        alert("Nama Anggota 1 (Data Utama) Wajib diisi!");
+        var alertMsg = '<div class="alert alert-danger rounded-4 mt-2"><i class="bi bi-exclamation-triangle-fill"></i> Data Utama (Nama Anggota 1) Wajib diisi!</div>';
+        document.getElementById('outputSPJ').innerHTML = alertMsg;
+        document.getElementById('outputReport').innerHTML = alertMsg;
         switchTab('data');
         return null;
       }
