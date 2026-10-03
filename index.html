@@ -174,24 +174,13 @@
       
       <!-- TAB 1: DATA UTAMA -->
       <div id="tab-data" class="tab-view active">
-
-        <!-- CARD PERTINGGAL / RIWAYAT SPJ (1-CLICK AUTO-FILL) -->
-        <div class="card-custom border border-primary border-opacity-25" style="background: rgba(0, 122, 255, 0.03);">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-bold text-primary" style="font-size: 0.9rem;">
-              <i class="bi bi-clock-history me-1"></i> Pertinggal / Riwayat SPJ
-            </span>
-            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-0" onclick="clearSPJHistory()" style="font-size: 0.75rem;" title="Hapus Semua Riwayat">
-              <i class="bi bi-trash me-1"></i>Hapus Riwayat
-            </button>
-          </div>
-          <p class="text-muted small mb-2" style="font-size: 0.78rem;">
-            Pilih pertinggal SPJ yang pernah diisi sebelumnya untuk mengisi form otomatis (1-Click Auto-Fill).
-          </p>
-          <select class="form-select border-primary" id="selectSPJHistory" onchange="loadSPJHistory(this.value)">
-            <option value="">-- Pilih Riwayat SPJ / Pertinggal --</option>
-          </select>
-          <div id="toastNotification" class="mt-2 text-success small fw-bold" style="display: none;"></div>
+        
+        <!-- FITUR MUAT RIWAYAT SERVER -->
+        <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+          <small class="text-muted fw-bold"><i class="bi bi-server me-1"></i> Data Tersimpan di Server</small>
+          <button type="button" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm" onclick="fetchHistoryList()" data-bs-toggle="modal" data-bs-target="#historyModal">
+            <i class="bi bi-cloud-arrow-down-fill me-1"></i> Muat Data SPJ
+          </button>
         </div>
 
         <div class="card-custom">
@@ -296,7 +285,7 @@
                 </button>
                 <div class="dropdown d-inline-block">
                   <button class="btn btn-sm btn-light border shadow-sm rounded-pill dropdown-toggle" type="button" id="btnRiwayat" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.75rem;">
-                    <i class="bi bi-clock-history"></i> Riwayat
+                    <i class="bi bi-clock-history"></i> Riwayat Lokal
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2" aria-labelledby="btnRiwayat" id="listRiwayat" style="max-width: 300px;">
                     <li><span class="dropdown-item text-muted small">Belum ada riwayat</span></li>
@@ -358,32 +347,16 @@
         </div>
 
         <button type="button" class="btn btn-danger-gradient btn-submit w-100 mt-2" id="btnSubmitSPJ" onclick="submitSPJ()">
-          <i class="bi bi-file-earmark-ppt-fill me-1"></i> Generate Dokumen SPJ
+          <i class="bi bi-file-earmark-ppt-fill me-1"></i> Generate Dokumen SPJ (Simpan History)
         </button>
         <div id="outputSPJ" class="mt-4 mb-4"></div>
       </div>
 
       <!-- TAB 3: REPORT -->
       <div id="tab-report" class="tab-view">
-
-        <!-- CARD PERTINGGAL SPJ DI TAB REPORT -->
-        <div class="card-custom border border-info border-opacity-25" style="background: rgba(90, 200, 250, 0.05);">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-bold text-info" style="font-size: 0.9rem;">
-              <i class="bi bi-journal-bookmark-fill me-1"></i> Pilih Pertinggal SPJ Tersimpan
-            </span>
-          </div>
-          <p class="text-muted small mb-2" style="font-size: 0.78rem;">
-            Pilih pertinggal SPJ sebelumnya untuk otomatis mengisi seluruh data Laporan (1-Click Auto-Fill).
-          </p>
-          <select class="form-select border-info" id="selectSPJHistoryReport" onchange="loadSPJHistory(this.value)">
-            <option value="">-- Pilih Pertinggal SPJ --</option>
-          </select>
-        </div>
-
         <div class="card-custom">
           <div class="section-title title-report"><i class="bi bi-card-text"></i> Data Laporan (Auto-Fill)</div>
-          <p class="small text-muted mb-4">Data ini diisi otomatis dari pertinggal halaman utama, tapi dapat Anda ubah jika perlu.</p>
+          <p class="small text-muted mb-4">Data ini diisi otomatis dari halaman utama, tapi dapat Anda ubah jika perlu.</p>
           
           <div class="mb-3">
             <label class="form-label">Nama Pegawai (Employee Name)</label>
@@ -466,6 +439,27 @@
     </a>
   </div>
 
+  <!-- Modal History -->
+  <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header border-bottom-0 bg-light rounded-top-4">
+          <h5 class="modal-title fw-bold" id="historyModalLabel"><i class="bi bi-server text-primary"></i> Riwayat Tersimpan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-3">
+          <div id="historyLoading" class="text-center my-4" style="display: none;">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted small">Memuat riwayat dari server...</p>
+          </div>
+          <div id="historyListContainer" class="list-group list-group-flush">
+            <!-- List generated here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <script>
@@ -543,16 +537,13 @@
       }
     }
 
-    // Fungsi Pengambilan Data dengan Validasi Non-Alert yang Ramah WebView
     function getTextFormData(activeTab) {
       if(!document.getElementById('nama1').value) {
         var errorHtml = '<div class="alert alert-danger rounded-4 mt-2"><i class="bi bi-exclamation-triangle-fill"></i> Peringatan: Nama Anggota Utama di Tab "Utama" belum diisi! Silakan isi terlebih dahulu.</div>';
         
-        // Tampilkan pesan error di tab tempat tombol diklik
         if(activeTab === 'spj') document.getElementById('outputSPJ').innerHTML = errorHtml;
         if(activeTab === 'report') document.getElementById('outputReport').innerHTML = errorHtml;
         
-        // Jeda 2 detik agar user membaca error, lalu otomatis pindah ke Tab Utama
         setTimeout(() => switchTab('data'), 2000);
         return null;
       }
@@ -582,7 +573,6 @@
       };
     }
 
-    // FUNGSI API CALL KE GAS (100% FETCH API, NO GOOGLE.SCRIPT.RUN)
     function callGasAPI(data, btnElement, outElement, originalBtnText, successHtmlBuilder) {
       if(GAS_API_URL === 'MASUKKAN_LINK_GAS_ANDA_DISINI') {
         outElement.innerHTML = `<div class="alert alert-warning rounded-4"><i class="bi bi-exclamation-triangle-fill"></i> Anda belum memasukkan URL GAS di dalam kode HTML.</div>`;
@@ -620,9 +610,6 @@
       var data = getTextFormData('spj');
       if (!data) return;
 
-      // OTOMATIS SIMPAN PERTINGGAL RIWAYAT SPJ KETIKA GENERATE SPJ!
-      saveSPJHistory(data);
-
       data.action = 'generateSPJ';
       data.f1_b64 = photoData.f1.b64; data.f1_mime = photoData.f1.mime; data.f1_name = photoData.f1.name;
       data.f2_b64 = photoData.f2.b64; data.f2_mime = photoData.f2.mime; data.f2_name = photoData.f2.name;
@@ -630,11 +617,11 @@
       var btn = document.getElementById('btnSubmitSPJ');
       var out = document.getElementById('outputSPJ');
       
-      callGasAPI(data, btn, out, `<i class="bi bi-file-earmark-ppt-fill me-1"></i> Generate Dokumen SPJ`, function(res) {
+      callGasAPI(data, btn, out, `<i class="bi bi-file-earmark-ppt-fill me-1"></i> Generate Dokumen SPJ (Simpan History)`, function(res) {
         return `
           <div class="alert alert-success border-0 shadow-sm rounded-4">
-            <h6 class="fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Berhasil!</h6>
-            <p class="small mb-3">${res.message}</p>
+            <h6 class="fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Berhasil Tersimpan!</h6>
+            <p class="small mb-3">Dokumen telah dibuat di folder spesifik, dan Data History Anda aman tersimpan di Server untuk Report nanti.</p>
             <div class="d-grid gap-2">
               ${res.pdfUrl ? `<a href="${res.pdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh PDF</a>` : ''}
               ${res.pptxUrl ? `<a href="${res.pptxUrl}" target="_blank" class="btn btn-outline-danger rounded-pill"><i class="bi bi-file-earmark-slides-fill me-1"></i> Unduh PPTX</a>` : ''}
@@ -671,121 +658,89 @@
       });
     }
 
-    // =========================================================
-    // FUNGSI PERTINGGAL / RIWAYAT DOKUMEN SPJ (1-CLICK AUTO-FILL)
-    // =========================================================
-    function saveSPJHistory(data) {
-      if (!data || !data.nama1) return;
-      var history = JSON.parse(localStorage.getItem('spjFormHistory') || '[]');
+    // ==========================================
+    // LOGIKA FETCH HISTORY DARI SERVER (GAS)
+    // ==========================================
+    function fetchHistoryList() {
+      document.getElementById('historyLoading').style.display = 'block';
+      document.getElementById('historyListContainer').innerHTML = '';
       
-      var recordId = 'SPJ_' + Date.now();
-      var now = new Date();
-      var dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-      var timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-      var savedAt = dateStr + ' ' + timeStr;
-      
-      var label = (data.tglBerangkat ? data.tglBerangkat : 'Draft') + ' - ' + (data.tujuan ? data.tujuan : 'Tujuan') + ' (' + data.nama1 + ')';
-
-      var entry = {
-        id: recordId,
-        savedAt: savedAt,
-        label: label,
-        formData: data
-      };
-
-      // Hindari duplikat identik
-      history = history.filter(function(item) {
-        if (!item.formData) return false;
-        return !(item.formData.nama1 === data.nama1 && 
-                 item.formData.tglBerangkat === data.tglBerangkat && 
-                 item.formData.tujuan === data.tujuan && 
-                 item.formData.keteranganPekerjaan === data.keteranganPekerjaan);
-      });
-
-      history.unshift(entry);
-      if (history.length > 20) history.pop();
-
-      localStorage.setItem('spjFormHistory', JSON.stringify(history));
-      renderSPJHistoryDropdown();
-    }
-
-    function renderSPJHistoryDropdown() {
-      var history = JSON.parse(localStorage.getItem('spjFormHistory') || '[]');
-      var select1 = document.getElementById('selectSPJHistory');
-      var select2 = document.getElementById('selectSPJHistoryReport');
-
-      [select1, select2].forEach(function(selectEl) {
-        if (!selectEl) return;
-        if (history.length === 0) {
-          selectEl.innerHTML = '<option value="">-- Belum ada riwayat SPJ tersimpan --</option>';
-          return;
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'getHistoryList' })
+      })
+      .then(r => r.json())
+      .then(res => {
+        document.getElementById('historyLoading').style.display = 'none';
+        if(res.status === 'success') {
+          let html = '';
+          res.data.forEach(item => {
+            html += `<button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" onclick="fetchHistoryData('${item.id}')">
+                       <span class="text-truncate" style="max-width: 85%; font-size: 0.85rem;"><i class="bi bi-file-earmark-text me-2 text-primary"></i>${item.name}</span>
+                       <i class="bi bi-chevron-right text-muted" style="font-size: 0.8rem;"></i>
+                     </button>`;
+          });
+          if(html === '') html = '<div class="text-center text-muted small py-3">Belum ada riwayat di server. Generate SPJ dahulu untuk menyimpan data.</div>';
+          document.getElementById('historyListContainer').innerHTML = html;
+        } else {
+          document.getElementById('historyListContainer').innerHTML = `<div class="alert alert-danger small">Gagal: ${res.message}</div>`;
         }
-
-        var html = '<option value="">-- Pilih Riwayat SPJ / Pertinggal --</option>';
-        history.forEach(function(item) {
-          html += '<option value="' + item.id + '">' + item.label + ' [' + item.savedAt + ']</option>';
-        });
-        selectEl.innerHTML = html;
+      })
+      .catch(err => {
+        document.getElementById('historyLoading').style.display = 'none';
+        document.getElementById('historyListContainer').innerHTML = `<div class="alert alert-danger small">Gagal memuat API: ${err.message}</div>`;
       });
     }
 
-    function loadSPJHistory(recordId) {
-      if (!recordId) return;
-      var history = JSON.parse(localStorage.getItem('spjFormHistory') || '[]');
-      var found = history.find(function(item) { return item.id === recordId; });
-      if (!found || !found.formData) return;
-
-      var d = found.formData;
-
-      // Isi otomatis Tab 1
-      if (d.no1 !== undefined) document.getElementById('no1').value = d.no1;
-      if (d.nama1 !== undefined) document.getElementById('nama1').value = d.nama1;
-      if (d.no2 !== undefined) document.getElementById('no2').value = d.no2;
-      if (d.namaTeam2 !== undefined) document.getElementById('namaTeam2').value = d.namaTeam2;
-      if (d.asal !== undefined) document.getElementById('asal').value = d.asal;
-      if (d.tujuan !== undefined) document.getElementById('tujuan').value = d.tujuan;
-      if (d.tglBerangkat !== undefined) document.getElementById('tglBerangkat').value = d.tglBerangkat;
-      if (d.waktuBerangkat !== undefined) document.getElementById('waktuBerangkat').value = d.waktuBerangkat;
-      if (d.tglPulang !== undefined) document.getElementById('tglPulang').value = d.tglPulang;
-      if (d.waktuPulang !== undefined) document.getElementById('waktuPulang').value = d.waktuPulang;
-      if (d.jarak !== undefined) document.getElementById('jarak').value = d.jarak;
-      if (d.koordinatAsal !== undefined) document.getElementById('koordinatAsal').value = d.koordinatAsal;
-      if (d.koordinatTujuan !== undefined) document.getElementById('koordinatTujuan').value = d.koordinatTujuan;
-      if (d.keteranganPekerjaan !== undefined) document.getElementById('keteranganPekerjaan').value = d.keteranganPekerjaan;
-      if (d.deskripsiMilestone !== undefined) document.getElementById('deskripsiMilestone').value = d.deskripsiMilestone;
-      if (d.keteranganTambahan !== undefined) document.getElementById('keteranganTambahan').value = d.keteranganTambahan;
-      if (d.namaSPV !== undefined) document.getElementById('namaSPV').value = d.namaSPV;
-      if (d.approvalPosition !== undefined) document.getElementById('approvalPosition').value = d.approvalPosition;
-
-      // Isi otomatis Tab 3 (Report)
-      document.getElementById('reportEmployeeName').value = d.reportEmployeeName || d.nama1 || '';
-      document.getElementById('reportPositionTitle').value = d.reportPositionTitle || 'Field Operation Staff';
-      document.getElementById('reportDestination').value = d.reportDestination || d.tujuan || '';
-      document.getElementById('reportPurpose').value = d.reportPurpose || d.keteranganPekerjaan || '';
-
-      // Tampilkan Notifikasi Sukses
-      var toastEl = document.getElementById('toastNotification');
-      if (toastEl) {
-        toastEl.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Pertinggal SPJ berhasil dimuat otomatis!';
-        toastEl.style.display = 'block';
-        setTimeout(function() { toastEl.style.display = 'none'; }, 3000);
-      }
+    function fetchHistoryData(fileId) {
+      document.getElementById('historyLoading').style.display = 'block';
+      document.getElementById('historyListContainer').style.display = 'none';
       
-      // Sinkronkan pilihan dropdown di kedua tab
-      var s1 = document.getElementById('selectSPJHistory');
-      var s2 = document.getElementById('selectSPJHistoryReport');
-      if (s1) s1.value = recordId;
-      if (s2) s2.value = recordId;
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'getHistoryData', fileId: fileId })
+      })
+      .then(r => r.json())
+      .then(res => {
+        document.getElementById('historyLoading').style.display = 'none';
+        document.getElementById('historyListContainer').style.display = 'block';
+        
+        if(res.status === 'success') {
+          const d = res.data;
+          const fields = [
+            'no1', 'nama1', 'no2', 'namaTeam2', 'asal', 'tujuan',
+            'tglBerangkat', 'waktuBerangkat', 'tglPulang', 'waktuPulang', 'jarak',
+            'koordinatAsal', 'koordinatTujuan', 'keteranganPekerjaan', 'deskripsiMilestone',
+            'keteranganTambahan', 'namaSPV', 'approvalPosition',
+            'reportEmployeeName', 'reportPositionTitle', 'reportDestination', 'reportPurpose'
+          ];
+          
+          fields.forEach(field => {
+            if(d[field] !== undefined && document.getElementById(field)) {
+              document.getElementById(field).value = d[field];
+            }
+          });
+          
+          var myModalEl = document.getElementById('historyModal');
+          var modal = bootstrap.Modal.getInstance(myModalEl);
+          if(modal) modal.hide();
+          
+          // Beri notifikasi lembut dan bawa user ke bawah perlahan
+          alert('Berhasil! Data SPJ telah dimuat otomatis dari Server ke dalam form.');
+        } else {
+          alert('Gagal memuat data: ' + res.message);
+        }
+      })
+      .catch(err => {
+        document.getElementById('historyLoading').style.display = 'none';
+        document.getElementById('historyListContainer').style.display = 'block';
+        alert('Gagal memuat data: ' + err.message);
+      });
     }
 
-    function clearSPJHistory() {
-      if (confirm("Apakah Anda yakin ingin menghapus seluruh pertinggal riwayat SPJ tersimpan?")) {
-        localStorage.removeItem('spjFormHistory');
-        renderSPJHistoryDropdown();
-      }
-    }
-
-    // Riwayat Milestone
+    // Riwayat Milestone Lokal
     function saveMilestoneHistory(text) {
       if (!text || text.trim() === "") return;
       var history = JSON.parse(localStorage.getItem('spjMilestoneHistory') || '[]');
@@ -818,7 +773,6 @@
 
     window.onload = function() {
       loadMilestoneHistory();
-      renderSPJHistoryDropdown();
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('tglBerangkat').value = today;
       document.getElementById('tglPulang').value = today;
