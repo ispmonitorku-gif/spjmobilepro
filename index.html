@@ -174,6 +174,26 @@
       
       <!-- TAB 1: DATA UTAMA -->
       <div id="tab-data" class="tab-view active">
+
+        <!-- CARD PERTINGGAL / RIWAYAT SPJ (1-CLICK AUTO-FILL) -->
+        <div class="card-custom border border-primary border-opacity-25" style="background: rgba(0, 122, 255, 0.03);">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold text-primary" style="font-size: 0.9rem;">
+              <i class="bi bi-clock-history me-1"></i> Pertinggal / Riwayat SPJ
+            </span>
+            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-0" onclick="clearSPJHistory()" style="font-size: 0.75rem;" title="Hapus Semua Riwayat">
+              <i class="bi bi-trash me-1"></i>Hapus Riwayat
+            </button>
+          </div>
+          <p class="text-muted small mb-2" style="font-size: 0.78rem;">
+            Pilih pertinggal SPJ yang pernah diisi sebelumnya untuk mengisi form otomatis (1-Click Auto-Fill).
+          </p>
+          <select class="form-select border-primary" id="selectSPJHistory" onchange="loadSPJHistory(this.value)">
+            <option value="">-- Pilih Riwayat SPJ / Pertinggal --</option>
+          </select>
+          <div id="toastNotification" class="mt-2 text-success small fw-bold" style="display: none;"></div>
+        </div>
+
         <div class="card-custom">
           <div class="section-title title-primary"><i class="bi bi-people-fill"></i> Data Team</div>
           <div class="p-3 mb-3 bg-white rounded-4 shadow-sm border border-light">
@@ -345,9 +365,25 @@
 
       <!-- TAB 3: REPORT -->
       <div id="tab-report" class="tab-view">
+
+        <!-- CARD PERTINGGAL SPJ DI TAB REPORT -->
+        <div class="card-custom border border-info border-opacity-25" style="background: rgba(90, 200, 250, 0.05);">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold text-info" style="font-size: 0.9rem;">
+              <i class="bi bi-journal-bookmark-fill me-1"></i> Pilih Pertinggal SPJ Tersimpan
+            </span>
+          </div>
+          <p class="text-muted small mb-2" style="font-size: 0.78rem;">
+            Pilih pertinggal SPJ sebelumnya untuk otomatis mengisi seluruh data Laporan (1-Click Auto-Fill).
+          </p>
+          <select class="form-select border-info" id="selectSPJHistoryReport" onchange="loadSPJHistory(this.value)">
+            <option value="">-- Pilih Pertinggal SPJ --</option>
+          </select>
+        </div>
+
         <div class="card-custom">
           <div class="section-title title-report"><i class="bi bi-card-text"></i> Data Laporan (Auto-Fill)</div>
-          <p class="small text-muted mb-4">Data ini diisi otomatis dari halaman utama, tapi dapat Anda ubah jika perlu.</p>
+          <p class="small text-muted mb-4">Data ini diisi otomatis dari pertinggal halaman utama, tapi dapat Anda ubah jika perlu.</p>
           
           <div class="mb-3">
             <label class="form-label">Nama Pegawai (Employee Name)</label>
@@ -584,6 +620,9 @@
       var data = getTextFormData('spj');
       if (!data) return;
 
+      // OTOMATIS SIMPAN PERTINGGAL RIWAYAT SPJ KETIKA GENERATE SPJ!
+      saveSPJHistory(data);
+
       data.action = 'generateSPJ';
       data.f1_b64 = photoData.f1.b64; data.f1_mime = photoData.f1.mime; data.f1_name = photoData.f1.name;
       data.f2_b64 = photoData.f2.b64; data.f2_mime = photoData.f2.mime; data.f2_name = photoData.f2.name;
@@ -632,6 +671,120 @@
       });
     }
 
+    // =========================================================
+    // FUNGSI PERTINGGAL / RIWAYAT DOKUMEN SPJ (1-CLICK AUTO-FILL)
+    // =========================================================
+    function saveSPJHistory(data) {
+      if (!data || !data.nama1) return;
+      var history = JSON.parse(localStorage.getItem('spjFormHistory') || '[]');
+      
+      var recordId = 'SPJ_' + Date.now();
+      var now = new Date();
+      var dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      var timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      var savedAt = dateStr + ' ' + timeStr;
+      
+      var label = (data.tglBerangkat ? data.tglBerangkat : 'Draft') + ' - ' + (data.tujuan ? data.tujuan : 'Tujuan') + ' (' + data.nama1 + ')';
+
+      var entry = {
+        id: recordId,
+        savedAt: savedAt,
+        label: label,
+        formData: data
+      };
+
+      // Hindari duplikat identik
+      history = history.filter(function(item) {
+        if (!item.formData) return false;
+        return !(item.formData.nama1 === data.nama1 && 
+                 item.formData.tglBerangkat === data.tglBerangkat && 
+                 item.formData.tujuan === data.tujuan && 
+                 item.formData.keteranganPekerjaan === data.keteranganPekerjaan);
+      });
+
+      history.unshift(entry);
+      if (history.length > 20) history.pop();
+
+      localStorage.setItem('spjFormHistory', JSON.stringify(history));
+      renderSPJHistoryDropdown();
+    }
+
+    function renderSPJHistoryDropdown() {
+      var history = JSON.parse(localStorage.getItem('spjFormHistory') || '[]');
+      var select1 = document.getElementById('selectSPJHistory');
+      var select2 = document.getElementById('selectSPJHistoryReport');
+
+      [select1, select2].forEach(function(selectEl) {
+        if (!selectEl) return;
+        if (history.length === 0) {
+          selectEl.innerHTML = '<option value="">-- Belum ada riwayat SPJ tersimpan --</option>';
+          return;
+        }
+
+        var html = '<option value="">-- Pilih Riwayat SPJ / Pertinggal --</option>';
+        history.forEach(function(item) {
+          html += '<option value="' + item.id + '">' + item.label + ' [' + item.savedAt + ']</option>';
+        });
+        selectEl.innerHTML = html;
+      });
+    }
+
+    function loadSPJHistory(recordId) {
+      if (!recordId) return;
+      var history = JSON.parse(localStorage.getItem('spjFormHistory') || '[]');
+      var found = history.find(function(item) { return item.id === recordId; });
+      if (!found || !found.formData) return;
+
+      var d = found.formData;
+
+      // Isi otomatis Tab 1
+      if (d.no1 !== undefined) document.getElementById('no1').value = d.no1;
+      if (d.nama1 !== undefined) document.getElementById('nama1').value = d.nama1;
+      if (d.no2 !== undefined) document.getElementById('no2').value = d.no2;
+      if (d.namaTeam2 !== undefined) document.getElementById('namaTeam2').value = d.namaTeam2;
+      if (d.asal !== undefined) document.getElementById('asal').value = d.asal;
+      if (d.tujuan !== undefined) document.getElementById('tujuan').value = d.tujuan;
+      if (d.tglBerangkat !== undefined) document.getElementById('tglBerangkat').value = d.tglBerangkat;
+      if (d.waktuBerangkat !== undefined) document.getElementById('waktuBerangkat').value = d.waktuBerangkat;
+      if (d.tglPulang !== undefined) document.getElementById('tglPulang').value = d.tglPulang;
+      if (d.waktuPulang !== undefined) document.getElementById('waktuPulang').value = d.waktuPulang;
+      if (d.jarak !== undefined) document.getElementById('jarak').value = d.jarak;
+      if (d.koordinatAsal !== undefined) document.getElementById('koordinatAsal').value = d.koordinatAsal;
+      if (d.koordinatTujuan !== undefined) document.getElementById('koordinatTujuan').value = d.koordinatTujuan;
+      if (d.keteranganPekerjaan !== undefined) document.getElementById('keteranganPekerjaan').value = d.keteranganPekerjaan;
+      if (d.deskripsiMilestone !== undefined) document.getElementById('deskripsiMilestone').value = d.deskripsiMilestone;
+      if (d.keteranganTambahan !== undefined) document.getElementById('keteranganTambahan').value = d.keteranganTambahan;
+      if (d.namaSPV !== undefined) document.getElementById('namaSPV').value = d.namaSPV;
+      if (d.approvalPosition !== undefined) document.getElementById('approvalPosition').value = d.approvalPosition;
+
+      // Isi otomatis Tab 3 (Report)
+      document.getElementById('reportEmployeeName').value = d.reportEmployeeName || d.nama1 || '';
+      document.getElementById('reportPositionTitle').value = d.reportPositionTitle || 'Field Operation Staff';
+      document.getElementById('reportDestination').value = d.reportDestination || d.tujuan || '';
+      document.getElementById('reportPurpose').value = d.reportPurpose || d.keteranganPekerjaan || '';
+
+      // Tampilkan Notifikasi Sukses
+      var toastEl = document.getElementById('toastNotification');
+      if (toastEl) {
+        toastEl.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Pertinggal SPJ berhasil dimuat otomatis!';
+        toastEl.style.display = 'block';
+        setTimeout(function() { toastEl.style.display = 'none'; }, 3000);
+      }
+      
+      // Sinkronkan pilihan dropdown di kedua tab
+      var s1 = document.getElementById('selectSPJHistory');
+      var s2 = document.getElementById('selectSPJHistoryReport');
+      if (s1) s1.value = recordId;
+      if (s2) s2.value = recordId;
+    }
+
+    function clearSPJHistory() {
+      if (confirm("Apakah Anda yakin ingin menghapus seluruh pertinggal riwayat SPJ tersimpan?")) {
+        localStorage.removeItem('spjFormHistory');
+        renderSPJHistoryDropdown();
+      }
+    }
+
     // Riwayat Milestone
     function saveMilestoneHistory(text) {
       if (!text || text.trim() === "") return;
@@ -665,6 +818,7 @@
 
     window.onload = function() {
       loadMilestoneHistory();
+      renderSPJHistoryDropdown();
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('tglBerangkat').value = today;
       document.getElementById('tglPulang').value = today;
