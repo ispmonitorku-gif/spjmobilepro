@@ -176,10 +176,8 @@
       <div id="tab-data" class="tab-view active">
         <div class="card-custom">
           <div class="section-title title-primary"><i class="bi bi-people-fill"></i> Data Team</div>
-          <p class="small text-muted mb-3">Isi 1 orang jika tugas mandiri, isi 2 orang jika bertugas ganda.</p>
-          
           <div class="p-3 mb-3 bg-white rounded-4 shadow-sm border border-light">
-            <span class="badge bg-primary mb-2 rounded-pill px-3 py-2"><i class="bi bi-person-star"></i> Anggota Utama (1) - Wajib</span>
+            <span class="badge bg-primary mb-2 rounded-pill px-3 py-2"><i class="bi bi-person-star"></i> Anggota Utama (1)</span>
             <div class="row g-2">
               <div class="col-3">
                 <label class="form-label">No.</label>
@@ -192,7 +190,7 @@
             </div>
           </div>
           <div class="p-3 bg-white rounded-4 shadow-sm border border-light">
-            <span class="badge bg-secondary mb-2 rounded-pill px-3 py-2"><i class="bi bi-person-add"></i> Anggota Tim (2) - Opsional</span>
+            <span class="badge bg-secondary mb-2 rounded-pill px-3 py-2"><i class="bi bi-person-add"></i> Anggota Tim (2)</span>
             <div class="row g-2">
               <div class="col-3">
                 <label class="form-label">No.</label>
@@ -200,7 +198,7 @@
               </div>
               <div class="col-9">
                 <label class="form-label">Nama Anggota</label>
-                <input type="text" class="form-control" id="namaTeam2" placeholder="(Kosongkan jika hanya 1 orang)">
+                <input type="text" class="form-control" id="namaTeam2" placeholder="Contoh: Budi Santoso">
               </div>
             </div>
           </div>
@@ -438,7 +436,7 @@
     // =========================================================
     // WAJIB DIGANTI: Masukkan URL Web App Google Apps Script di sini!
     // =========================================================
-    const GAS_API_URL = 'MASUKKAN_URL_GAS_ANDA_DISINI';
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxS6z8wSD9dYXjSU61JYJefTKuT5sspXqUX3KkQmxd1P9_ZjwAETwV2hztQzhfZBgfz/exec';
     
     let photoData = {
       f1: { b64: "", mime: "", name: "" }, f2: { b64: "", mime: "", name: "" },
@@ -462,15 +460,12 @@
       const namaUtama = document.getElementById('nama1').value;
       const tujuanUtama = document.getElementById('tujuan').value;
       const kerjaanUtama = document.getElementById('keteranganPekerjaan').value;
-      // Jika 2 orang, gabungkan namanya untuk report
-      const namaTim2 = document.getElementById('namaTeam2').value;
-      const combinedNames = namaTim2 ? `${namaUtama} & ${namaTim2}` : namaUtama;
 
       const inEmpName = document.getElementById('reportEmployeeName');
       const inDest = document.getElementById('reportDestination');
       const inPurpose = document.getElementById('reportPurpose');
 
-      if (!inEmpName.value && combinedNames) inEmpName.value = combinedNames;
+      if (!inEmpName.value && namaUtama) inEmpName.value = namaUtama;
       if (!inDest.value && tujuanUtama) inDest.value = tujuanUtama;
       if (!inPurpose.value && kerjaanUtama) inPurpose.value = kerjaanUtama;
     }
@@ -512,46 +507,16 @@
       }
     }
 
-    // Fungsi menyimpan riwayat milestone ke localStorage
-    function saveMilestoneHistory(text) {
-      if(!text) return;
-      let history = JSON.parse(localStorage.getItem('spj_milestone_history') || '[]');
-      if(!history.includes(text)) {
-        history.unshift(text);
-        if(history.length > 5) history.pop(); // simpan max 5 riwayat terakhir
-        localStorage.setItem('spj_milestone_history', JSON.stringify(history));
-      }
-      loadMilestoneHistory();
-    }
-
-    // Fungsi memuat riwayat milestone dari localStorage
-    function loadMilestoneHistory() {
-      let history = JSON.parse(localStorage.getItem('spj_milestone_history') || '[]');
-      let list = document.getElementById('listRiwayat');
-      if(history.length === 0) {
-        list.innerHTML = '<li><span class="dropdown-item text-muted small">Belum ada riwayat</span></li>';
-        return;
-      }
-      list.innerHTML = '';
-      history.forEach(item => {
-        let li = document.createElement('li');
-        let shortText = item.substring(0, 30) + '...';
-        li.innerHTML = `<a class="dropdown-item text-truncate" href="#" style="font-size: 0.8rem;" onclick="document.getElementById('deskripsiMilestone').value = this.getAttribute('data-full'); return false;">${shortText}</a>`;
-        li.querySelector('a').setAttribute('data-full', item);
-        list.appendChild(li);
-      });
-    }
-
-    // Panggil fungsi saat aplikasi dibuka
-    document.addEventListener('DOMContentLoaded', loadMilestoneHistory);
-
+    // Fungsi Pengambilan Data dengan Validasi Non-Alert yang Ramah WebView
     function getTextFormData(activeTab) {
       if(!document.getElementById('nama1').value) {
         var errorHtml = '<div class="alert alert-danger rounded-4 mt-2"><i class="bi bi-exclamation-triangle-fill"></i> Peringatan: Nama Anggota Utama di Tab "Utama" belum diisi! Silakan isi terlebih dahulu.</div>';
         
+        // Tampilkan pesan error di tab tempat tombol diklik
         if(activeTab === 'spj') document.getElementById('outputSPJ').innerHTML = errorHtml;
         if(activeTab === 'report') document.getElementById('outputReport').innerHTML = errorHtml;
         
+        // Jeda 2 detik agar user membaca error, lalu otomatis pindah ke Tab Utama
         setTimeout(() => switchTab('data'), 2000);
         return null;
       }
@@ -559,7 +524,7 @@
         no1: document.getElementById('no1').value,
         nama1: document.getElementById('nama1').value,
         no2: document.getElementById('no2').value,
-        namaTeam2: document.getElementById('namaTeam2').value, // Jika kosong, backend otomatis anggap 1 orang
+        namaTeam2: document.getElementById('namaTeam2').value,
         asal: document.getElementById('asal').value,
         tujuan: document.getElementById('tujuan').value,
         tglBerangkat: document.getElementById('tglBerangkat').value,
@@ -581,9 +546,10 @@
       };
     }
 
+    // FUNGSI API CALL KE GAS (100% FETCH API, NO GOOGLE.SCRIPT.RUN)
     function callGasAPI(data, btnElement, outElement, originalBtnText, successHtmlBuilder) {
-      if(GAS_API_URL === 'MASUKKAN_URL_GAS_ANDA_DISINI' || !GAS_API_URL.startsWith('https://script.google.com/')) {
-        outElement.innerHTML = `<div class="alert alert-warning rounded-4"><i class="bi bi-exclamation-triangle-fill"></i> Anda belum memasukkan URL GAS yang valid di dalam kode HTML.</div>`;
+      if(GAS_API_URL === 'MASUKKAN_LINK_GAS_ANDA_DISINI') {
+        outElement.innerHTML = `<div class="alert alert-warning rounded-4"><i class="bi bi-exclamation-triangle-fill"></i> Anda belum memasukkan URL GAS di dalam kode HTML.</div>`;
         return;
       }
 
@@ -632,8 +598,8 @@
             <p class="small mb-3">${res.message}</p>
             <div class="d-grid gap-2">
               ${res.pdfUrl ? `<a href="${res.pdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh PDF</a>` : ''}
-              ${res.pptxUrl ? `<a href="${res.pptxUrl}" target="_blank" class="btn btn-outline-danger rounded-pill"><i class="bi bi-file-earmark-slides-fill me-1"></i> Buka Slides</a>` : ''}
-              ${res.excelUrl ? `<a href="${res.excelUrl}" target="_blank" class="btn btn-success rounded-pill mt-1"><i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Buka Excel / Sheet</a>` : ''}
+              ${res.pptxUrl ? `<a href="${res.pptxUrl}" target="_blank" class="btn btn-outline-danger rounded-pill"><i class="bi bi-file-earmark-slides-fill me-1"></i> Unduh PPTX</a>` : ''}
+              ${res.excelUrl ? `<a href="${res.excelUrl}" target="_blank" class="btn btn-success rounded-pill mt-1"><i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Unduh Excel</a>` : ''}
             </div>
           </div>`;
       });
@@ -659,12 +625,50 @@
             <h6 class="fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Berhasil!</h6>
             <p class="small mb-3">${res.message}</p>
             <div class="d-grid gap-2">
-              ${res.docPdfUrl ? `<a href="${res.docPdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh PDF Laporan</a>` : ''}
-              ${res.docUrl ? `<a href="${res.docUrl}" target="_blank" class="btn btn-outline-primary rounded-pill"><i class="bi bi-file-earmark-word-fill me-1"></i> Buka Dokumen</a>` : ''}
+              ${res.docPdfUrl ? `<a href="${res.docPdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh PDF</a>` : ''}
+              ${res.docUrl ? `<a href="${res.docUrl}" target="_blank" class="btn btn-primary rounded-pill"><i class="bi bi-file-earmark-word-fill me-1"></i> Unduh Word</a>` : ''}
             </div>
           </div>`;
       });
     }
+
+    // Riwayat Milestone
+    function saveMilestoneHistory(text) {
+      if (!text || text.trim() === "") return;
+      var history = JSON.parse(localStorage.getItem('spjMilestoneHistory') || '[]');
+      history = history.filter(item => item !== text); 
+      history.unshift(text); 
+      if (history.length > 5) history.pop(); 
+      localStorage.setItem('spjMilestoneHistory', JSON.stringify(history));
+      loadMilestoneHistory();
+    }
+
+    function loadMilestoneHistory() {
+      var history = JSON.parse(localStorage.getItem('spjMilestoneHistory') || '[]');
+      var listEl = document.getElementById('listRiwayat');
+      if (history.length === 0) {
+        listEl.innerHTML = `<li><span class="dropdown-item text-muted small">Belum ada riwayat</span></li>`;
+        return;
+      }
+      var html = '';
+      history.forEach(function(item, index) {
+        var previewText = item.substring(0, 35) + (item.length > 35 ? '...' : '');
+        html += `<li><a class="dropdown-item small py-2 border-bottom" href="#" onclick="useHistory(${index}); return false;" style="white-space: normal;"><i class="bi bi-clock me-1 text-primary"></i> ${previewText}</a></li>`;
+      });
+      listEl.innerHTML = html;
+    }
+
+    function useHistory(index) {
+      var history = JSON.parse(localStorage.getItem('spjMilestoneHistory') || '[]');
+      if (history[index]) document.getElementById('deskripsiMilestone').value = history[index];
+    }
+
+    window.onload = function() {
+      loadMilestoneHistory();
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('tglBerangkat').value = today;
+      document.getElementById('tglPulang').value = today;
+    };
   </script>
 </body>
 </html>
