@@ -355,9 +355,16 @@
       <!-- TAB 3: REPORT -->
       <div id="tab-report" class="tab-view">
         <div class="card-custom">
-          <div class="section-title title-report"><i class="bi bi-card-text"></i> Data Laporan (Auto-Fill)</div>
-          <p class="small text-muted mb-4">Data ini diisi otomatis dari halaman utama, tapi dapat Anda ubah jika perlu.</p>
+          <div class="section-title title-report"><i class="bi bi-card-text"></i> Data Laporan Karyawan</div>
+          <p class="small text-muted mb-4">Pilih nama karyawan untuk report ini. Nama file hasil download akan otomatis menggunakan nama karyawan tersebut.</p>
           
+          <div class="mb-3">
+            <label class="form-label">Pilih Karyawan untuk Report</label>
+            <select class="form-select" id="reportEmployeeSelect" onchange="onEmployeeSelectChange()">
+              <!-- Pilihan terisi otomatis dari Data Team -->
+            </select>
+          </div>
+
           <div class="mb-3">
             <label class="form-label">Nama Pegawai (Employee Name)</label>
             <input type="text" class="form-control" id="reportEmployeeName" placeholder="Otomatis terisi...">
@@ -482,20 +489,40 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (tabId === 'report') {
+        updateReportEmployeeDropdown();
         autoFillReportData();
       }
     }
 
+    function updateReportEmployeeDropdown() {
+      const nama1 = document.getElementById('nama1').value.trim();
+      const nama2 = document.getElementById('namaTeam2').value.trim();
+      const selectEl = document.getElementById('reportEmployeeSelect');
+      
+      let html = '';
+      if(nama1) html += `<option value="${nama1}">${nama1} (Anggota Utama)</option>`;
+      if(nama2) html += `<option value="${nama2}">${nama2} (Anggota Tim)</option>`;
+      if(!nama1 && !nama2) html += `<option value="">-- Belum ada nama team diisi --</option>`;
+      
+      selectEl.innerHTML = html;
+      onEmployeeSelectChange();
+    }
+
+    function onEmployeeSelectChange() {
+      const selectEl = document.getElementById('reportEmployeeSelect');
+      const inEmpName = document.getElementById('reportEmployeeName');
+      if(selectEl.value) {
+        inEmpName.value = selectEl.value;
+      }
+    }
+
     function autoFillReportData() {
-      const namaUtama = document.getElementById('nama1').value;
       const tujuanUtama = document.getElementById('tujuan').value;
       const kerjaanUtama = document.getElementById('keteranganPekerjaan').value;
 
-      const inEmpName = document.getElementById('reportEmployeeName');
       const inDest = document.getElementById('reportDestination');
       const inPurpose = document.getElementById('reportPurpose');
 
-      if (!inEmpName.value && namaUtama) inEmpName.value = namaUtama;
       if (!inDest.value && tujuanUtama) inDest.value = tujuanUtama;
       if (!inPurpose.value && kerjaanUtama) inPurpose.value = kerjaanUtama;
     }
@@ -651,8 +678,8 @@
             <h6 class="fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Berhasil!</h6>
             <p class="small mb-3">${res.message}</p>
             <div class="d-grid gap-2">
-              ${res.docPdfUrl ? `<a href="${res.docPdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh PDF</a>` : ''}
-              ${res.docUrl ? `<a href="${res.docUrl}" target="_blank" class="btn btn-primary rounded-pill"><i class="bi bi-file-earmark-word-fill me-1"></i> Unduh Word</a>` : ''}
+              ${res.docPdfUrl ? `<a href="${res.docPdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh PDF (${data.reportEmployeeName})</a>` : ''}
+              ${res.docUrl ? `<a href="${res.docUrl}" target="_blank" class="btn btn-primary rounded-pill"><i class="bi bi-file-earmark-word-fill me-1"></i> Unduh Word (${data.reportEmployeeName})</a>` : ''}
             </div>
           </div>`;
       });
@@ -714,7 +741,7 @@
             'tglBerangkat', 'waktuBerangkat', 'tglPulang', 'waktuPulang', 'jarak',
             'koordinatAsal', 'koordinatTujuan', 'keteranganPekerjaan', 'deskripsiMilestone',
             'keteranganTambahan', 'namaSPV', 'approvalPosition',
-            'reportEmployeeName', 'reportPositionTitle', 'reportDestination', 'reportPurpose'
+            'reportPositionTitle', 'reportDestination', 'reportPurpose'
           ];
           
           fields.forEach(field => {
@@ -723,11 +750,13 @@
             }
           });
           
+          updateReportEmployeeDropdown();
+          
           var myModalEl = document.getElementById('historyModal');
           var modal = bootstrap.Modal.getInstance(myModalEl);
           if(modal) modal.hide();
           
-          alert('Berhasil! Data SPJ telah dimuat otomatis dari Server ke dalam form.');
+          alert('Berhasil! Data SPJ & Team telah dimuat otomatis dari Server ke dalam form.');
         } else {
           alert('Gagal memuat data: ' + res.message);
         }
@@ -772,6 +801,7 @@
 
     window.onload = function() {
       loadMilestoneHistory();
+      updateReportEmployeeDropdown();
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('tglBerangkat').value = today;
       document.getElementById('tglPulang').value = today;
