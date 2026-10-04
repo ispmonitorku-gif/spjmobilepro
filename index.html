@@ -621,7 +621,7 @@
         return `
           <div class="alert alert-success border-0 shadow-sm rounded-4">
             <h6 class="fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Berhasil Tersimpan!</h6>
-            <p class="small mb-3">Dokumen telah dibuat di folder spesifik, dan Data History Anda aman tersimpan di Server untuk Report nanti.</p>
+            <p class="small mb-3">Dokumen Tahap 1 telah dibuat di folder yang ditentukan dan History Anda aman tersimpan untuk Report nanti.</p>
             <div class="d-grid gap-2">
               ${res.pdfUrl ? `<a href="${res.pdfUrl}" target="_blank" class="btn btn-danger rounded-pill"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Unduh PDF</a>` : ''}
               ${res.pptxUrl ? `<a href="${res.pptxUrl}" target="_blank" class="btn btn-outline-danger rounded-pill"><i class="bi bi-file-earmark-slides-fill me-1"></i> Unduh PPTX</a>` : ''}
@@ -727,7 +727,6 @@
           var modal = bootstrap.Modal.getInstance(myModalEl);
           if(modal) modal.hide();
           
-          // Beri notifikasi lembut dan bawa user ke bawah perlahan
           alert('Berhasil! Data SPJ telah dimuat otomatis dari Server ke dalam form.');
         } else {
           alert('Gagal memuat data: ' + res.message);
